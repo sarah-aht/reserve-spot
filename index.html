@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserve Your Spot — Live Travel Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#00b4b4; --teal-deep:#067a80; --ink:#0f2a33; --muted:#5b7480;
+    --card:rgba(255,255,255,.82); --line:rgba(15,42,51,.10);
+    --coral:#ff6b4a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Inter',system-ui,sans-serif; color:var(--ink);
+    min-height:100vh; display:flex; align-items:flex-start; justify-content:center;
+    padding:40px 16px 64px; overflow-x:hidden;
+    background:linear-gradient(135deg,#eafcfb 0%,#fdf3ec 45%,#fdeef2 100%);
+    background-attachment:fixed;
+  }
+
+  /* ---- animated background blobs ---- */
+  .blob{position:fixed; border-radius:50%; filter:blur(70px); opacity:.5; z-index:0; pointer-events:none;
+        animation:drift 18s ease-in-out infinite alternate;}
+  .b1{width:420px;height:420px; background:#7de8e4; top:-120px; left:-100px;}
+  .b2{width:380px;height:380px; background:#ffd3b6; bottom:-140px; right:-80px; animation-delay:-6s;}
+  .b3{width:300px;height:300px; background:#ffc9d6; top:35%; right:-120px; animation-delay:-12s;}
+  @keyframes drift{
+    from{transform:translate(0,0) scale(1);}
+    to{transform:translate(60px,40px) scale(1.15);}
+  }
+
+  .wrap{position:relative; z-index:1; width:100%; max-width:540px;}
+
+  .brand{text-align:center; margin-bottom:26px; animation:rise .7s cubic-bezier(.2,.7,.3,1) both;}
+  .brand .eyebrow{
+    display:inline-block; font-size:.72rem; font-weight:600; letter-spacing:2.5px; text-transform:uppercase;
+    color:var(--teal-deep); background:rgba(0,180,180,.12); border:1px solid rgba(0,180,180,.25);
+    padding:6px 14px; border-radius:999px; margin-bottom:14px;
+  }
+  .brand h1{
+    font-family:'Sora',sans-serif; font-size:clamp(1.9rem,6vw,2.6rem); font-weight:800; line-height:1.15;
+    background:linear-gradient(90deg,#067a80,#00b4b4 45%,#ff6b4a); background-size:200% auto;
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    animation:shine 6s linear infinite;
+  }
+  @keyframes shine{to{background-position:200% center;}}
+  .brand p{color:var(--muted); font-size:.95rem; margin-top:10px;}
+
+  .card{
+    background:var(--card); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.7); border-radius:24px; padding:32px 30px;
+    box-shadow:0 20px 50px rgba(6,90,96,.14);
+  }
+  .enter{animation:rise .55s cubic-bezier(.2,.7,.3,1) both;}
+  .exit{animation:slideOut .3s ease both;}
+  @keyframes rise{from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);}}
+  @keyframes slideOut{to{opacity:0; transform:translateX(-26px);}}
+
+  .step-label{font-size:.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--teal); margin-bottom:8px;}
+  .step-title{font-family:'Sora',sans-serif; font-size:1.35rem; font-weight:700; margin-bottom:20px;}
+  label{display:block; font-size:.85rem; font-weight:600; margin:16px 0 7px;}
+  input, select{
+    width:100%; padding:13px 15px; border:1.5px solid var(--line); border-radius:14px;
+    font-size:1rem; background:rgba(255,255,255,.9); color:var(--ink); outline:none;
+    transition:border .15s, box-shadow .15s, transform .1s; font-family:inherit;
+  }
+  input:focus, select:focus{border-color:var(--teal); box-shadow:0 0 0 4px rgba(0,180,180,.15);}
+  .err{color:#e05252; font-size:.8rem; margin-top:5px; display:none; animation:shake .3s;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  .btn{
+    position:relative; overflow:hidden; display:block; width:100%; margin-top:24px; padding:15px;
+    border:none; border-radius:16px; cursor:pointer; font-family:'Sora',sans-serif;
+    font-size:1.02rem; font-weight:700; letter-spacing:.3px; color:#fff;
+    background:linear-gradient(90deg,var(--teal-deep),var(--teal));
+    box-shadow:0 10px 24px rgba(6,122,128,.35);
+    transition:transform .15s, box-shadow .2s, opacity .2s;
+  }
+  .btn::after{
+    content:""; position:absolute; top:0; left:-80%; width:50%; height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);
+    transform:skewX(-20deg); transition:left .5s;
+  }
+  .btn:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 14px 30px rgba(6,122,128,.45);}
+  .btn:hover:not(:disabled)::after{left:130%;}
+  .btn:active:not(:disabled){transform:translateY(0);}
+  .btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none;}
+  .btn.coral{background:linear-gradient(90deg,#f0523a,var(--coral)); box-shadow:0 10px 24px rgba(255,107,74,.35);}
+  .btn.ghost{background:#eef4f5; color:var(--ink); box-shadow:none;}
+  .hidden{display:none !important;}
+
+  /* Date chips (Today / Tomorrow) */
+  .date-chips{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .dchip{
+    border:1.5px solid var(--line); border-radius:16px; padding:14px 10px; text-align:center;
+    cursor:pointer; background:rgba(255,255,255,.9); transition:all .15s; user-select:none;
+  }
+  .dchip:hover{border-color:var(--teal); transform:translateY(-2px); box-shadow:0 8px 18px rgba(6,122,128,.12);}
+  .dchip.sel{border-color:var(--teal); background:linear-gradient(135deg,rgba(0,180,180,.14),rgba(0,180,180,.05));
+    box-shadow:0 0 0 3px rgba(0,180,180,.18); font-weight:600;}
+  .dchip .d1{font-family:'Sora',sans-serif; font-size:1rem;}
+  .dchip .d2{font-size:.8rem; color:var(--muted); margin-top:3px;}
+
+  /* Time slots */
+  .slots{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px;}
+  .slot{
+    padding:12px 4px; border:1.5px solid var(--line); border-radius:12px; text-align:center;
+    font-size:.93rem; cursor:pointer; background:rgba(255,255,255,.9); user-select:none;
+    transition:all .13s;
+  }
+  .slot:hover{border-color:var(--teal); transform:translateY(-2px); box-shadow:0 6px 14px rgba(6,122,128,.12);}
+  .slot.sel{
+    background:linear-gradient(135deg,var(--teal-deep),var(--teal)); color:#fff; border-color:transparent;
+    font-weight:700; box-shadow:0 8px 18px rgba(0,180,180,.35); transform:scale(1.05);
+  }
+  .slot-pop{animation:pop .25s ease both;}
+  @keyframes pop{from{opacity:0; transform:scale(.85);} to{opacity:1; transform:scale(1);}}
+  .slot.past{
+    opacity:.38; cursor:not-allowed; text-decoration:line-through;
+    background:#eef1f2; transform:none !important; box-shadow:none !important;
+  }
+  .dchip.locked{
+    opacity:.45; cursor:not-allowed; position:relative; transform:none !important; box-shadow:none !important;
+  }
+  .dchip.locked::after{
+    content:"Unavailable today"; display:block; font-size:.68rem; color:#c0564a; margin-top:4px; font-weight:600;
+  }
+  .tz-note{font-size:.8rem; color:var(--muted); margin-top:10px;}
+
+  /* Modals */
+  .modal-bg{
+    position:fixed; inset:0; background:rgba(10,32,40,.55); backdrop-filter:blur(5px);
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;
+    animation:fadeIn .25s ease both;
+  }
+  @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
+  .modal{
+    background:#fff; border-radius:22px; max-width:480px; width:100%; padding:30px 28px;
+    box-shadow:0 30px 80px rgba(0,0,0,.3); max-height:88vh; overflow-y:auto;
+    animation:pop .35s cubic-bezier(.2,.9,.3,1.2) both;
+  }
+  .modal h3{font-family:'Sora',sans-serif; font-size:1.2rem; margin-bottom:14px;}
+  .modal p{font-size:.94rem; line-height:1.6; margin-bottom:12px;}
+  .warn{
+    background:linear-gradient(135deg,#fff4ec,#ffeadf); border-left:4px solid var(--coral);
+    padding:13px 15px; border-radius:12px; font-size:.92rem; margin-bottom:14px; line-height:1.5;
+  }
+  .radio-row{
+    display:flex; gap:12px; align-items:flex-start; border:1.5px solid var(--line); border-radius:14px;
+    padding:14px; margin-top:10px; cursor:pointer; transition:all .15s; background:rgba(255,255,255,.9);
+  }
+  .radio-row:hover{border-color:var(--teal); box-shadow:0 6px 16px rgba(6,122,128,.10);}
+  .radio-row input{margin-top:3px; accent-color:var(--teal); width:auto;}
+  .radio-row .rt{font-weight:600; font-size:.95rem;}
+  .radio-row .rs{font-size:.82rem; color:var(--muted); margin-top:2px;}
+  .voucher-tag{
+    display:inline-block; background:#e2f8ec; color:#157347; font-size:.7rem; font-weight:700;
+    padding:3px 9px; border-radius:20px; margin-left:6px; vertical-align:middle;
+  }
+  .note-box{background:#f2f8f9; border:1px solid var(--line); border-radius:16px; padding:18px; font-size:.9rem; line-height:1.65;}
+  .note-box h4{font-family:'Sora',sans-serif; color:var(--teal-deep); margin-bottom:10px;}
+
+  /* Confirmation */
+  .confirm{text-align:center;}
+  .check-ring{
+    width:76px; height:76px; margin:0 auto 16px; border-radius:50%;
+    background:linear-gradient(135deg,#12c48c,#0a9e70); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 14px 30px rgba(18,196,140,.4); animation:pop .5s cubic-bezier(.2,.9,.3,1.3) both;
+  }
+  .check-ring svg{width:38px; height:38px;}
+  .check-ring path{stroke:#fff; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:40; stroke-dashoffset:40; animation:draw .5s .35s ease forwards;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  .summary{
+    text-align:left; background:rgba(242,248,249,.9); border:1px solid var(--line);
+    border-radius:16px; padding:16px 18px; margin:18px 0; font-size:.93rem; line-height:1.75;
+  }
+  .summary b{color:var(--teal-deep);}
+  .zoom-box{
+    background:linear-gradient(135deg,#0a5c62,#00a3a3); color:#fff; border-radius:18px;
+    padding:20px; margin:16px 0; text-align:center; box-shadow:0 14px 30px rgba(6,122,128,.3);
+  }
+  .zoom-box a{color:#ffe27a; font-family:'Sora',sans-serif; font-size:1.25rem; font-weight:800; text-decoration:none; word-break:break-all;}
+  .zoom-box a:hover{text-decoration:underline;}
+  .zoom-box small{display:block; margin-top:8px; opacity:.85;}
+  .cal-row{display:flex; gap:10px; margin-top:12px;}
+  .cal-row .btn{margin-top:0; padding:13px; font-size:.88rem;}
+  .footnote{font-size:.8rem; color:var(--muted); margin-top:16px; line-height:1.5;}
+
+  @media (max-width:420px){
+    .slots{grid-template-columns:repeat(2,1fr);}
+    .card{padding:26px 20px;}
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="wrap">
+
+  <div class="brand">
+    <span class="eyebrow">Live Travel Presentation</span>
+    <h1>Reserve Your Spot</h1>
+    <p>Pick a time that works for you — takes less than a minute.</p>
+  </div>
+
+  <!-- ============ STEP 1: DETAILS ============ -->
+  <div class="card enter" id="step1">
+    <div class="step-label">Step 1 of 2</div>
+    <div class="step-title">Your Details</div>
+    <form id="form1" novalidate>
+      <label for="firstName">First Name</label>
+      <input type="text" id="firstName" autocomplete="given-name">
+      <div class="err" id="e-firstName">Please enter your first name.</div>
+
+      <label for="lastName">Last Name</label>
+      <input type="text" id="lastName" autocomplete="family-name">
+      <div class="err" id="e-lastName">Please enter your last name.</div>
+
+      <label for="email">Email Address</label>
+      <input type="email" id="email" autocomplete="email" placeholder="For your Zoom invitation & exclusive travel certificate">
+      <div class="err" id="e-email">Please enter a valid email address.</div>
+
+      <label for="phone">Mobile Number</label>
+      <input type="tel" id="phone" autocomplete="tel" placeholder="(___) ___-____">
+      <div class="err" id="e-phone">Please enter a valid mobile number.</div>
+
+      <label>Preferred Date</label>
+      <div class="date-chips" id="dateChips"></div>
+      <div class="err" id="e-date">Please choose Today or Tomorrow.</div>
+
+      <button type="submit" class="btn">Continue →</button>
+    </form>
+  </div>
+
+  <!-- ============ STEP 2: TIME ============ -->
+  <div class="card hidden" id="step2">
+    <div class="step-label">Step 2 of 2</div>
+    <div class="step-title">Choose Your Time</div>
+
+    <label for="timezone">Your Timezone</label>
+    <select id="timezone">
+      <option value="" disabled selected>Select your timezone…</option>
+      <option>Eastern</option>
+      <option>Pacific</option>
+      <option>Central</option>
+      <option>Mountain</option>
+      <option>Hawaii</option>
+      <option>Vancouver</option>
+    </select>
+
+    <div id="slotArea" class="hidden">
+      <label style="margin-top:18px;">Available Times <span id="tzEcho" style="font-weight:400;color:var(--muted)"></span></label>
+      <div class="slots" id="slotGrid"></div>
+      <div class="tz-note">All times shown in <b id="tzName"></b> time.</div>
+    </div>
+
+    <button class="btn coral" id="reserveBtn" disabled>Reserve My Spot</button>
+  </div>
+
+  <!-- ============ ADD TO CALENDAR POPUP ============ -->
+<div class="modal-bg hidden" id="calModal">
+  <div class="modal" style="text-align:center;">
+    <div class="check-ring" style="background:linear-gradient(135deg,#0e7c86,#00b4b4); box-shadow:0 14px 30px rgba(0,180,180,.4);">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 15l2 2 4-4"/></svg>
+    </div>
+    <h3>Add to Your Calendar?</h3>
+    <p style="color:var(--muted); font-size:.92rem;">Save your session now so you don't miss it.</p>
+    <a class="btn" id="gcalLinkM" target="_blank" rel="noopener" style="text-decoration:none;">＋ Google Calendar</a>
+    <button class="btn ghost" id="icsBtnM" style="margin-top:10px;">Download (.ics)</button>
+    <button class="btn coral" id="calDone" style="margin-top:10px;">Done</button>
+  </div>
+</div>
+
+<!-- ============ CONFIRMATION ============ -->
+  <div class="card hidden confirm" id="step3">
+    <div class="check-ring">
+      <svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>
+    </div>
+    <div class="step-title" style="margin-bottom:4px;">You're Booked!</div>
+    <p style="color:var(--muted); font-size:.93rem;">Your spot is reserved. Here's your session summary:</p>
+
+    <div class="summary" id="summaryBox"></div>
+
+    <div class="zoom-box">
+      <div style="font-size:.8rem; letter-spacing:1.5px; text-transform:uppercase; opacity:.85;">Your Zoom Access</div>
+      <a href="https://live.travelaht.com/aht" target="_blank" rel="noopener">live.travelaht.com/aht</a>
+      <small>We'll also text and email you a copy of this link.</small>
+    </div>
+
+    <div class="cal-row">
+      <a class="btn" id="gcalLink" target="_blank" rel="noopener" style="text-decoration:none;">＋ Add to Google Calendar</a>
+      <button class="btn ghost" id="icsBtn">Download (.ics)</button>
+    </div>
+    <div class="footnote">Tip: joining from a laptop, desktop or tablet earns you the $100 Rewards voucher on top of your vacation voucher.</div>
+  </div>
+</div>
+
+<!-- ============ MODAL 1: SAFETY + DEVICE ============ -->
+<div class="modal-bg hidden" id="modal1">
+  <div class="modal">
+    <h3>Before You Join — Quick Reminders</h3>
+    <div class="warn">🚗 <b>Our host cannot accept participants who are driving or in a moving vehicle.</b><br>So prior to joining, please make sure you're stationary &amp; with good internet access.</div>
+    <p>We highly recommend watching the presentation on a wide-screen device like laptop, desktop or tablet so you could see the presentation better and more stable. <b>Connecting this way qualifies you to also receive a $100 Rewards voucher on top of your vacation voucher.</b></p>
+    <p style="font-weight:600; margin-bottom:2px;">How would you connect?</p>
+
+    <label class="radio-row">
+      <input type="radio" name="device" value="Laptop/Desktop/Tablet">
+      <span><span class="rt">Laptop, desktop or tablet</span> <span class="voucher-tag">+$100 Rewards voucher</span><br>
+      <span class="rs">Best viewing experience &amp; more stable connection</span></span>
+    </label>
+    <label class="radio-row">
+      <input type="radio" name="device" value="Mobile phone">
+      <span><span class="rt">Mobile phone</span><br>
+      <span class="rs">Please make sure you are stationary with good internet access</span></span>
+    </label>
+
+    <button class="btn" id="modal1Next" disabled>Next</button>
+  </div>
+</div>
+
+<!-- ============ MODAL 2: QUICK NOTE ============ -->
+<div class="modal-bg hidden" id="modal2">
+  <div class="modal">
+    <div class="note-box">
+      <h4>A Quick Note About Check-in</h4>
+      <p>When you join the presentation, you'll be asked to complete a short participant survey. This simply helps us get to know our audience and understand who we're presenting to.</p>
+      <p>Some questions may include your <strong>total household income</strong> and residency/<strong>citizenship</strong>. For household income, please consider the <strong>combined income of everyone in your household, including yourself, your spouse/partner, or other contributing family members</strong> (ideally <span style="background:#ffe27a;color:#0f2a33;font-weight:800;padding:1px 7px;border-radius:5px;">$50,000/year</span>).</p>
+      <p style="margin-bottom:0;">The survey does not affect your ability to join the presentation. Everyone is welcome to attend!</p>
+    </div>
+    <button class="btn coral" id="understandBtn">I Understand</button>
+  </div>
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzo1CzeCXQH4l2Y91B4pn-zFSklKJzoCHeZ55WmGc2bzq9IDeiOWpIHzZjsDwdhhdV80A/exec";
+const ZOOM_URL   = "https://live.travelaht.com/aht";
+const CAL_URL    = "https://aloha-hawaii-tours.github.io/travelpresentation-live/";
+const EVENT_TITLE = "Live Travel Presentation";
+
+/* Time slots are defined in Eastern and auto-converted to the other zones (DST-safe) */
+const ZONES = {
+  "Eastern":  "America/New_York",
+  "Pacific":  "America/Los_Angeles",
+  "Central":  "America/Chicago",
+  "Mountain": "America/Denver",
+  "Hawaii":   "Pacific/Honolulu",
+  "Vancouver":"America/Vancouver"
+};
+const SLOT_TIMES_ET = ["14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
+const TODAY_LOCK_ET = "20:15"; // after this Eastern time, "Today" locks and only "Tomorrow" can be picked
+
+const state = { firstName:"", lastName:"", email:"", phone:"", date:"", timezone:"", timeLabel:"", time24:"", device:"" };
+
+/* ---------- helpers ---------- */
+function zonedWallToUtc(dateStr, timeStr, tz){
+  const [y,mo,da] = dateStr.split("-").map(Number);
+  const [h,mi]    = timeStr.split(":").map(Number);
+  const guess = Date.UTC(y, mo-1, da, h, mi);
+  const dtf = new Intl.DateTimeFormat("en-US",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"});
+  const parts = {};
+  dtf.formatToParts(new Date(guess)).forEach(p=>{ if(p.type!=="literal") parts[p.type]=p.value; });
+  const asUTC = Date.UTC(+parts.year, +parts.month-1, +parts.day, +parts.hour%24, +parts.minute, +parts.second);
+  return new Date(guess - (asUTC - guess));
+}
+function wallTimeIn(date, tz, hour12){
+  return new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"numeric",minute:"2-digit",hour12:hour12}).format(date);
+}
+function wallParts24(date, tz){
+  return new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(date);
+}
+function nowInET(){
+  // returns {date:"YYYY-MM-DD", mins: minutes since midnight} for America/New_York right now
+  const d = new Date();
+  const dtf = new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+  const p = {};
+  dtf.formatToParts(d).forEach(x=>{ if(x.type!=="literal") p[x.type]=x.value; });
+  return { date:`${p.year}-${p.month}-${p.day}`, mins:(+p.hour%24)*60 + (+p.minute) };
+}
+function toMins(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+function isoLocal(d){
+  const p = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+const $ = id => document.getElementById(id);
+
+/* ---------- Today / Tomorrow chips ---------- */
+(function buildDateChips(){
+  const fmt = new Intl.DateTimeFormat("en-US",{weekday:"short", month:"short", day:"numeric"});
+  const today = new Date();
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const et = nowInET();
+  const pastCutoff = et.mins >= toMins(TODAY_LOCK_ET); // 8:15 PM ET
+  const box = $("dateChips");
+
+  function addChip(label, sub, value, locked){
+    const el = document.createElement("div");
+    el.className = "dchip";
+    el.innerHTML = `<div class="d1">${label}</div><div class="d2">${sub}</div>`;
+    if(locked){
+      el.classList.add("locked");
+      el.onclick = ()=>{ $("e-date").textContent = "Today's presentations have ended — please choose Tomorrow."; $("e-date").style.display = "block"; };
+    } else {
+      el.onclick = ()=>{
+        document.querySelectorAll(".dchip").forEach(x=>x.classList.remove("sel"));
+        el.classList.add("sel");
+        state.date = value;
+        $("e-date").style.display = "none";
+        // refresh slots if a timezone is already chosen
+        if(state.timezone) $("timezone").dispatchEvent(new Event("change"));
+      };
+    }
+    box.appendChild(el);
+    return el;
+  }
+
+  if(!pastCutoff){
+    // Before 8:15 PM ET — only Today can be scheduled (past times still gray out)
+    const t = addChip("Today", fmt.format(today), isoLocal(today), false);
+    t.classList.add("sel");
+    state.date = isoLocal(today);
+  } else {
+    // Past 8:15 PM ET — Today is over, Tomorrow appears
+    addChip("Today", fmt.format(today), isoLocal(today), true);
+    const t = addChip("Tomorrow", fmt.format(tomorrow), isoLocal(tomorrow), false);
+    t.classList.add("sel");
+    state.date = isoLocal(tomorrow);
+  }
+})();
+
+/* ---------- STEP 1 validation ---------- */
+$("form1").addEventListener("submit", e=>{
+  e.preventDefault();
+  let ok = true;
+  const show = (id, bad)=>{ $(id).style.display = bad ? "block" : "none"; if(bad) ok=false; };
+  const first=$("firstName").value.trim(), last=$("lastName").value.trim(),
+        email=$("email").value.trim(), phone=$("phone").value.replace(/\D/g,"");
+  show("e-firstName", !first);
+  show("e-lastName", !last);
+  show("e-email", !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  show("e-phone", phone.length < 7);
+  show("e-date", !state.date);
+  if(!ok) return;
+  Object.assign(state,{firstName:first,lastName:last,email:email,phone:$("phone").value.trim()});
+  swapCards("step1","step2");
+});
+
+function swapCards(fromId, toId){
+  const from = $(fromId), to = $(toId);
+  from.classList.add("exit");
+  setTimeout(()=>{
+    from.classList.add("hidden"); from.classList.remove("exit");
+    to.classList.remove("hidden"); to.classList.add("enter");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }, 280);
+}
+
+/* ---------- STEP 2: slots ---------- */
+$("timezone").addEventListener("change", e=>{
+  const tzName = e.target.value;
+  state.timezone = tzName; state.timeLabel=""; state.time24="";
+  $("reserveBtn").disabled = true;
+  const tz = ZONES[tzName];
+  const grid = $("slotGrid"); grid.innerHTML = "";
+  const nowEt = nowInET();
+  const isToday = (state.date === nowEt.date);
+  SLOT_TIMES_ET.forEach((et, i)=>{
+    const d = zonedWallToUtc(state.date, et, "America/New_York");
+    const label = wallTimeIn(d, tz, true);
+    const t24   = wallParts24(d, tz);
+    const el = document.createElement("div");
+    el.className = "slot slot-pop"; el.textContent = label;
+    el.style.animationDelay = (i*0.03)+"s";
+    if(isToday && toMins(et) < nowEt.mins){
+      el.classList.add("past");       // this time has already passed (Eastern) — Today only
+      grid.appendChild(el);
+      return;
+    }
+    el.onclick = ()=>{
+      document.querySelectorAll(".slot").forEach(s=>s.classList.remove("sel"));
+      el.classList.add("sel");
+      state.timeLabel = label; state.time24 = t24; state.timeET = et;
+      $("reserveBtn").disabled = false;
+    };
+    grid.appendChild(el);
+  });
+  $("tzName").textContent = tzName;
+  $("tzEcho").textContent = `(${tzName})`;
+  $("slotArea").classList.remove("hidden");
+});
+
+/* ---------- RESERVE: save to sheet, then modal 1 ---------- */
+$("reserveBtn").addEventListener("click", ()=>{
+  if(!state.timeLabel) return;
+  saveToSheet();
+  $("modal1").classList.remove("hidden");
+});
+
+/* ---------- device selection ---------- */
+document.querySelectorAll('input[name="device"]').forEach(r=>{
+  r.addEventListener("change", ()=>{ state.device = r.value; $("modal1Next").disabled = false; });
+});
+$("modal1Next").addEventListener("click", ()=>{
+  $("modal1").classList.add("hidden");
+  $("modal2").classList.remove("hidden");
+});
+$("understandBtn").addEventListener("click", ()=>{
+  $("modal2").classList.add("hidden");
+  const urls = buildCalendarUrls();
+  $("gcalLinkM").href = urls.gcal;
+  $("icsBtnM").onclick = ()=>{
+    const blob = new Blob([urls.ics], {type:"text/calendar"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "travel-presentation.ics";
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  $("calModal").classList.remove("hidden");
+});
+$("calDone").addEventListener("click", ()=>{
+  $("calModal").classList.add("hidden");
+  showConfirmation();
+});
+
+/* ---------- Google Sheet ---------- */
+function saveToSheet(){
+  const payload = {
+    firstName: state.firstName, lastName: state.lastName, email: state.email,
+    phone: state.phone, date: state.date, timezone: state.timezone,
+    time: state.timeLabel, device: state.device || "(pending)", timeET: state.timeET || ""
+  };
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(payload)
+  }).catch(()=>{});
+}
+
+/* ---------- Confirmation + calendar ---------- */
+function compact(t24){ return t24.replace(":","") + "00"; }
+function addMinutes(t24, mins){
+  let [h,m] = t24.split(":").map(Number);
+  m += mins; h += Math.floor(m/60); m %= 60;
+  return String(h).padStart(2,"0") + String(m).padStart(2,"0") + "00";
+}
+function buildCalendarUrls(){
+  const d = state.date.replace(/-/g,"");
+  const start = d + "T" + compact(state.time24);
+  const end   = d + "T" + addMinutes(state.time24, 30);
+  const details = encodeURIComponent(
+    "Join the live travel presentation here: " + CAL_URL + "\n\n" +
+    "Zoom access: " + ZOOM_URL + "\n\n" +
+    "Please join from a stationary location with good internet access. " +
+    "A laptop, desktop or tablet is recommended — it also qualifies you for a $100 Rewards voucher on top of your vacation voucher."
+  );
+  const gcal = "https://calendar.google.com/calendar/render?action=TEMPLATE"
+    + "&text=" + encodeURIComponent(EVENT_TITLE)
+    + "&dates=" + start + "/" + end
+    + "&details=" + details
+    + "&location=" + encodeURIComponent(ZOOM_URL)
+    + "&ctz=" + encodeURIComponent(ZONES[state.timezone]);
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//AHT//Presentation//EN","BEGIN:VEVENT",
+    "UID:" + Date.now() + "@aht",
+    "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z",
+    "DTSTART:" + start, "DTEND:" + end,
+    "SUMMARY:" + EVENT_TITLE,
+    "DESCRIPTION:Join here: " + CAL_URL.replace(/,/g,"\\,") + " — Zoom access: " + ZOOM_URL.replace(/,/g,"\\,"),
+    "LOCATION:" + ZOOM_URL, "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  return { gcal, ics };
+}
+function showConfirmation(){
+  $("summaryBox").innerHTML =
+    "<b>Name:</b> " + state.firstName + " " + state.lastName + "<br>" +
+    "<b>Email:</b> " + state.email + "<br>" +
+    "<b>Mobile:</b> " + state.phone + "<br>" +
+    "<b>Date:</b> " + state.date + "<br>" +
+    "<b>Time:</b> " + state.timeLabel + " (" + state.timezone + ")<br>" +
+    "<b>Connecting via:</b> " + (state.device || "—");
+  const urls = buildCalendarUrls();
+  $("gcalLink").href = urls.gcal;
+  $("icsBtn").onclick = ()=>{
+    const blob = new Blob([urls.ics], {type:"text/calendar"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "travel-presentation.ics";
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  $("step2").classList.add("hidden");
+  $("step3").classList.remove("hidden");
+  $("step3").classList.add("enter");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
+</body>
+</html>
